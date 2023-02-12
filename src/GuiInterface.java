@@ -1,22 +1,30 @@
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.*;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+/**
+ * Класс, представляющий собой графический интерфейс для работы с классом {@link FileWorking}
+ * @author Андрей Помошников
+ * @version 1.0
+ */
 public class GuiInterface {
     /** Поле оболочки GUI */
-
-    private static  JFrame jFrame = new JFrame();
+    private static final JFrame jFrame = new JFrame();
 
     /** Поле шрифта */
-    private static Font font = new Font("Times New Roman",Font.BOLD,20);
+    private static final Font font = new Font("Times New Roman",Font.BOLD,20);
+    /** Поле имени диска */
     private static String drive;
+    /** Поле поле имени файла */
     private static String filename;
-
-    GuiInterface()
-    {
+    /**
+     * Конструктор - запуск GUI
+     */
+    GuiInterface() throws IOException {
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Dimension dimension = toolkit.getScreenSize();
@@ -47,32 +55,67 @@ public class GuiInterface {
         jPanel.setLayout(borderLayout);
         jFrame.add(jPanel);
         JButton launchButton = new JButton("Launch");
+        launchButton.setFont(font);
         jPanel.add(launchButton,BorderLayout.CENTER);
         Launch(launchButton,jPanel);
     }
-
-    private void Launch(JButton launchButton, JPanel jPanel)
+    /**
+     * Процедура для подсчета латинских букв в файле и создание нового с результатом
+     * @param launchButton - кнопка Launch
+     * @param  jPanel -  текущая панель
+     * @exception IllegalArgumentException если были поданы неверные имя или диск
+     * @exception AccessDeniedException если было отказано в доступе
+     * @exception NullPointerException если были введены пустые значения
+     * @exception IOException если произошла ошибка во время выполнения
+     */
+    private void Launch(JButton launchButton, JPanel jPanel) throws IOException
     {
         launchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                drive = JOptionPane.showInputDialog(jPanel,"Please, enter the name of your local drive",
-                        "C");
-                if (!drive.isEmpty())
-                {
-                   filename = JOptionPane.showInputDialog(jPanel,"Please, enter the filename",
-                            "my_file");
-                    try {
+                try {
+                    drive = JOptionPane.showInputDialog(jPanel, "Please, enter the name of your local drive",
+                            "C");
+
+                    if (!drive.isEmpty())
+                    {
+
+                        filename = JOptionPane.showInputDialog(jPanel, "Please, enter the filename",
+                                "my_file");
+
                         if (!filename.isEmpty()) {
 
                             try {
                                FileWorking fileWorking = new FileWorking(drive,filename);
-                               fileWorking.working();
-                            } catch (IllegalArgumentException il)
+                               if (fileWorking.working() == 0)
+                               {
+
+                                   String read = Files.readString(Path.of(drive + ":\\" + filename + "_symbols"+
+                                           ".txt"));
+                                   JTextArea display = new JTextArea(read, 12 ,12);
+                                   display.setFont(font);
+                                   display.setEditable(false);
+                                   JScrollPane scroll = new JScrollPane(display);
+                                   scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+                                   JOptionPane.showMessageDialog(jFrame,scroll,drive + ":\\" + filename + "_symbols"+
+                                           ".txt", JOptionPane.INFORMATION_MESSAGE);
+
+                               }
+                               else
+                               {
+                                   JOptionPane.showMessageDialog(jFrame,"File doesn't exist");
+                               }
+                            }
+                            catch (IllegalArgumentException illegalArgumentException)
                             {
-                                JOptionPane.showMessageDialog(jFrame,"You try to enter something illegal, please exit and try again");
-                            } catch (IOException ex) {
-                                throw new RuntimeException(ex);
+                                JOptionPane.showMessageDialog(jFrame,"You try to write illegal drive or filename, please try again");
+                            }
+                            catch (AccessDeniedException accessDeniedException)
+                            {
+                                JOptionPane.showMessageDialog(jFrame,"You don't have an access to this file");
+                            }
+                            catch (IOException ex) {
+                                JOptionPane.showMessageDialog(jFrame,"Something went wrong");
                             }
 
 
@@ -81,13 +124,22 @@ public class GuiInterface {
 
 
                         }
+                        else
+                        {
+                            JOptionPane.showMessageDialog(jFrame,"Please, don't write empty values");
+                        }
 
                 }
-
-                    catch (NullPointerException nul)
+                    else
                     {
-                        JOptionPane.showMessageDialog(jFrame,"Please, fill the values correctly");
+                        JOptionPane.showMessageDialog(jFrame,"Please, don't write empty values");
                     }
+
+                }
+                catch (NullPointerException nul)
+                {
+                    JOptionPane.showMessageDialog(jFrame,"Please, fill the values correctly and don't " +
+                            "interrupt input");
                 }
             }
         });

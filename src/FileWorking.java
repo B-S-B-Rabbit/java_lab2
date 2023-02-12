@@ -1,44 +1,56 @@
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
+import java.io.*;
+import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-
 import static java.nio.file.Files.exists;
 
+/**
+ * Класс, представляющий возможность работы с файлом для подсчета количества латинских букв с учетом регистра
+ * и имеющий свойства <b>map</b>, <b>filename</b>, <b>drive</b> и <b>path</b>
+ * @author Андрей Помошников
+ * @version 1.0
+ */
 public class FileWorking {
-    private Map<Character,Integer> map = new HashMap<>();
-    private String data;
-    private String filename;
-    private String drive;
+    /** Поле словаря символ: частота */
+    private final Map<Character,Integer> map = new HashMap<>();
+    /** Поле имени файла */
+    private final String filename;
+    /** Поле локального диска */
+    private final String drive;
+    /** Поле пути к файлу */
     private Path path = null;
-    FileWorking(String d,String f)
+
+    /**
+     * Конструктор - создание нового объекта для работы с файлом
+     * @param d - имя локального диска
+     * @param f - имя файла
+     * @exception InvalidPathException если путь невалиден
+     */
+    FileWorking(String d,String f) throws InvalidPathException
     {
+
         filename = f;
         drive = d;
-        try
-        {
-            path = Path.of(drive + ":\\" + filename + ".txt");
-        }
-        catch (InvalidPathException ipe)
-        {
-            System.out.println("InvalidPathException");
+        path = Path.of(drive + ":\\" + filename + ".txt");
 
-        }
+
     }
 
+    /**
+     * Функция для проверки существования файла
+     * @return возвращает булево значение true/false
+     */
     private boolean isFileExists()
     {
         return exists(path);
     }
-    private String readFile() throws IOException {
-       return Files.readString(path);
-    }
 
-    private boolean writeFile() throws IOException {
+    /**
+     * Процедура записи в новый файл результирующих значений
+     * @exception IOException если была неудачная попытка ввода-вывода
+     */
+    private void writeFile() throws IOException {
         Map<Character, Integer> sorted_map = new TreeMap<Character, Integer>(map);
         StringBuilder result = new StringBuilder();
         for (Character key: sorted_map.keySet())
@@ -47,38 +59,48 @@ public class FileWorking {
         }
         Files.writeString(Path.of(drive + ":\\" + filename + "_symbols"+ ".txt"),
                 result);
-        return true;
     }
 
-    private void counting()
-    {
-        for (int i = 0; i < data.length(); ++i)
+    /**
+     * Процедура подсчета частотности латинских символов
+     * @exception IOException если была неудачная попытка ввода-вывода
+     */
+    private void counting_reading() throws IOException {
+
+        FileReader fr = new FileReader(new File(String.valueOf(path)));
+        BufferedReader reader = new BufferedReader(fr);
+        String line = reader.readLine();
+        while (line != null)
         {
-            char c = data.charAt(i);
-            if ((int) c >= (int) 'a' && (int) c <= (int) 'z' || (int) c >= (int) 'A' && (int) c <= (int) 'Z')
-            {
-                map.merge(c, 1, Integer::sum);
+            for (int i = 0; i < line.length(); ++i) {
+                int ch = line.charAt(i);
+                if (ch >= (int) 'a' && ch <= (int) 'z' || ch >= (int) 'A' && ch <= (int) 'Z') {
+                    map.merge((char) ch, 1, Integer::sum);
+                }
             }
+            line = reader.readLine();
         }
+        fr.close();
     }
 
-
-    public void working() throws IOException {
+    /**
+     * Функция полной обработки файла
+     * @exception IOException если была неудачная попытка ввода-вывода
+     * @return возвращает 0 в случае успеха, 1 в случае если файл не существует
+     */
+    public int working() throws IOException {
         if (isFileExists())
     {
-        data = readFile();
-        counting();
+        counting_reading();
         writeFile();
-    }
 
     }
-
-    public void setData(String data) {
-        this.data = data;
+        else
+        {
+            return 1;
+        }
+    return 0;
     }
 
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
 }
 
