@@ -10,7 +10,7 @@ import static java.nio.file.Files.*;
  * Класс, представляющий возможность работы с файлом для подсчета количества латинских букв с учетом регистра
  * и имеющий свойства <b>map</b>, <b>filename</b>, <b>drive</b> и <b>path</b>
  * @author Андрей Помошников
- * @version 1.0
+ * @version 2.0
  */
 public class FileWorking {
     /** Поле словаря символ: частота */
@@ -46,9 +46,18 @@ public class FileWorking {
     {
         return exists(path);
     }
+    /**
+     * Функция для проверки скрытности файла
+     * @return возвращает булево значение true/false
+     * @throws IOException может вызвать исключение ввода-вывода
+     */
     private boolean isFileHidden() throws IOException {
         return isHidden(path);
     }
+    /**
+     * Функция для проверки возможности чтения
+     * @return возвращает булево значение true/false
+     */
     private boolean isFileReadable()  {
         return isReadable(path);
     }

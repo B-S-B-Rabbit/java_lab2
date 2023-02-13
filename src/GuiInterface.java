@@ -9,7 +9,7 @@ import java.nio.file.Path;
 /**
  * Класс, представляющий собой графический интерфейс для работы с классом {@link FileWorking}
  * @author Андрей Помошников
- * @version 1.0
+ * @version 2.0
  */
 public class GuiInterface {
     /** Поле оболочки GUI */
@@ -23,6 +23,7 @@ public class GuiInterface {
     private static String filename;
     /**
      * Конструктор - запуск GUI
+     * @throws IOException может вызвать исключение ввода-вывода
      */
     GuiInterface() throws IOException {
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
