@@ -103,7 +103,8 @@ public class GuiInterface {
                                }
                                else
                                {
-                                   JOptionPane.showMessageDialog(jFrame,"File doesn't exist");
+                                   JOptionPane.showMessageDialog(jFrame,"Sorry, you can't. Check some options of" +
+                                           " your file if it exists");
                                }
                             }
                             catch (IllegalArgumentException illegalArgumentException)

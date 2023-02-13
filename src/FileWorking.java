@@ -3,7 +3,8 @@ import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import static java.nio.file.Files.exists;
+
+import static java.nio.file.Files.*;
 
 /**
  * Класс, представляющий возможность работы с файлом для подсчета количества латинских букв с учетом регистра
@@ -45,6 +46,12 @@ public class FileWorking {
     {
         return exists(path);
     }
+    private boolean isFileHidden() throws IOException {
+        return isHidden(path);
+    }
+    private boolean isFileReadable()  {
+        return isReadable(path);
+    }
 
     /**
      * Процедура записи в новый файл результирующих значений
@@ -66,21 +73,21 @@ public class FileWorking {
      * @exception IOException если была неудачная попытка ввода-вывода
      */
     private void counting_reading() throws IOException {
-
-        FileReader fr = new FileReader(new File(String.valueOf(path)));
-        BufferedReader reader = new BufferedReader(fr);
-        String line = reader.readLine();
-        while (line != null)
-        {
-            for (int i = 0; i < line.length(); ++i) {
-                int ch = line.charAt(i);
-                if (ch >= (int) 'a' && ch <= (int) 'z' || ch >= (int) 'A' && ch <= (int) 'Z') {
-                    map.merge((char) ch, 1, Integer::sum);
+        try (FileReader fr = new FileReader(new File(String.valueOf(path)))) {
+            BufferedReader reader = new BufferedReader(fr);
+            String line = reader.readLine();
+            while (line != null) {
+                for (int i = 0; i < line.length(); ++i) {
+                    int ch = line.charAt(i);
+                    if (ch >= (int) 'a' && ch <= (int) 'z' || ch >= (int) 'A' && ch <= (int) 'Z') {
+                        map.merge((char) ch, 1, Integer::sum);
+                    }
                 }
+                line = reader.readLine();
             }
-            line = reader.readLine();
+        } catch (IOException ioException) {
+            throw new IOException();
         }
-        fr.close();
     }
 
     /**
@@ -89,7 +96,7 @@ public class FileWorking {
      * @return возвращает 0 в случае успеха, 1 в случае если файл не существует
      */
     public int working() throws IOException {
-        if (isFileExists())
+        if (isFileExists() && isFileReadable() && !isFileHidden())
     {
         counting_reading();
         writeFile();
